@@ -2,12 +2,21 @@
 # 1. Route packets to servers from clients
 # 2. Host the webapp that will monitor the traffic and routing
 # 3. (Just a joke) Occasionally send the mp3 file for "'I Was Made For Lovin You' By KISS'" to all servers
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, request
 import os
 from flask_cors import CORS
+import logging
 
-app = Flask(__name__, static_folder='../frontend/build', template_folder='../frontend/build')
+app = Flask(__name__, static_folder='./frontend/build', template_folder='./frontend/build')
 CORS(app)  # Enable CORS
+
+logging.basicConfig(level=logging.INFO)
+
+@app.before_request
+def log_request_info():
+    app.logger.info('Headers: %s', request.headers)
+    app.logger.info('Body: %s', request.get_data())
+
 
 @app.route('/Home', defaults={'path': ''})
 @app.route('/Home/<path:path>')
@@ -30,5 +39,5 @@ def catch_all(path):
     else:
         return send_from_directory(app.static_folder, 'index.html')
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
 
